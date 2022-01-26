@@ -1,7 +1,7 @@
 package main
 
 import (
-	"math/rand"
+	"fmt"
 	"net/http"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
@@ -9,30 +9,36 @@ import (
 	"github.com/go-echarts/go-echarts/v2/types"
 )
 
-// generate random data for line chart
-func generateLineItems() []opts.LineData {
-	items := make([]opts.LineData, 0)
-	for i := 0; i < 7; i++ {
-		items = append(items, opts.LineData{Value: rand.Intn(300)})
-	}
-	return items
-}
+var x_values []string
+var systolic []opts.LineData
+var diastolic []opts.LineData
 
-func httpserver(w http.ResponseWriter, _ *http.Request) {
-	// create a new line instance
+func httpserver(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("Method : ", req.Method)
+	fmt.Println("URL : ", req.URL)
+	fmt.Println("Header : ", req.Header)
+
 	line := charts.NewLine()
-	// set some global options like Title/Legend/ToolTip or anything else
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
 		charts.WithTitleOpts(opts.Title{
-			Title:    "Line example in Westeros theme",
-			Subtitle: "Line chart rendered by the http server this time",
+			Title:    "My Blood Pressure",
+			Subtitle: "Hojoon Son",
 		}))
 
-	// Put data into instance
-	line.SetXAxis([]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}).
-		AddSeries("Category A", generateLineItems()).
-		AddSeries("Category B", generateLineItems()).
+	switch req.Method {
+	case http.MethodPost:
+		fmt.Print(req.FormValue(("date")))
+		fmt.Print(req.FormValue(("systolic")))
+		fmt.Print(req.FormValue(("diastolic")))
+		x_values = append(x_values, req.FormValue("date"))
+		systolic = append(systolic, opts.LineData{Value: req.FormValue("systolic")})
+		diastolic = append(diastolic, opts.LineData{Value: req.FormValue("diastolic")})
+	}
+
+	line.SetXAxis(x_values).
+		AddSeries("Systolic", systolic).
+		AddSeries("Diastolic", diastolic).
 		SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: true}))
 	line.Render(w)
 }
