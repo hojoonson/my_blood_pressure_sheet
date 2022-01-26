@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  backend:
+    container_name: backend
+    build: ./
+    command: go run main.go
+    ports:
+      - "8081:8081"
