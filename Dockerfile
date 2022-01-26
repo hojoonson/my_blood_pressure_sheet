@@ -1,4 +1,7 @@
 FROM golang:latest
 WORKDIR /go/src/app
-COPY . .
-RUN go get -u github.com/go-echarts/go-echarts/v2/...
+
+RUN go mod init github.com/go-echarts/go-echarts
+RUN go mod tidy
+
+COPY main.go .
